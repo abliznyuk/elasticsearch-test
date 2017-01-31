@@ -8,20 +8,24 @@ import com.github.tlrx.elasticsearch.test.annotations.ElasticsearchNode;
 import com.github.tlrx.elasticsearch.test.annotations.ElasticsearchSetting;
 import com.github.tlrx.elasticsearch.test.support.junit.handlers.ClassLevelElasticsearchAnnotationHandler;
 import com.github.tlrx.elasticsearch.test.support.junit.handlers.FieldLevelElasticsearchAnnotationHandler;
-import org.elasticsearch.common.io.FileSystemUtils;
-import org.elasticsearch.common.settings.Settings.Builder;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.settings.Settings.Builder;
 import org.elasticsearch.node.Node;
-import org.elasticsearch.node.NodeBuilder;
+import org.elasticsearch.node.NodeValidationException;
+import org.elasticsearch.node.internal.InternalSettingsPreparer;
+import org.elasticsearch.plugins.Plugin;
+import org.elasticsearch.transport.Netty4Plugin;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.Map;
 
 import static com.github.tlrx.elasticsearch.test.provider.LocalClientProvider.deleteRecursively;
+import static java.util.Collections.singletonList;
 
 /**
  * Handle {@link ElasticsearchNode} annotation
@@ -97,10 +101,12 @@ public class ElasticsearchNodeAnnotationHandler implements ClassLevelElasticsear
 
         if (node == null) {
             // No node with this name has been found, let's instantiate a new one
-            node = NodeBuilder.nodeBuilder()
-                    .settings(settings)
-                    .local(elasticsearchNode.local())
-                    .node();
+            node = new MyNode(settings, singletonList(Netty4Plugin.class));
+            try {
+                node.start();
+            } catch (NodeValidationException e) {
+                throw new RuntimeException();
+            }
             context.put(nodeName, node);
         }
         return node;
@@ -112,15 +118,20 @@ public class ElasticsearchNodeAnnotationHandler implements ClassLevelElasticsear
     private Settings buildNodeSettings(ElasticsearchNode elasticsearchNode) {
 
         // Build default settings
-        Builder settingsBuilder = Settings.settingsBuilder()
+        Builder settingsBuilder = Settings.builder()
                 .put(NODE_NAME, elasticsearchNode.name())
                 .put("node.data", elasticsearchNode.data())
+                .put("node.max_local_storage_nodes", 10)
+                .put("node.attr.local", elasticsearchNode.local())
                 .put("cluster.name", elasticsearchNode.clusterName())
                 .put("path.home", ES_HOME)
                 .put("path.data", ES_HOME + "/data")
                 .put("path.logs", ES_HOME + "/logs")
-                .put("index.number_of_shards", "1")
-                .put("index.number_of_replicas", "0");
+                //.put("index.number_of_shards", "1")
+                //.put("index.number_of_replicas", "0")
+                .put("transport.type", "netty4")
+                .put("http.type", "netty4")
+                .put("http.enabled", "true");
 
         // Loads settings from configuration file
         String settingsFile = elasticsearchNode.configFile();
@@ -140,5 +151,11 @@ public class ElasticsearchNodeAnnotationHandler implements ClassLevelElasticsear
 
         // Build the settings
         return settingsBuilder.build();
+    }
+
+    private static class MyNode extends Node {
+        public MyNode(Settings preparedSettings, Collection<Class<? extends Plugin>> classpathPlugins) {
+            super(InternalSettingsPreparer.prepareEnvironment(preparedSettings, null), classpathPlugins);
+        }
     }
 }

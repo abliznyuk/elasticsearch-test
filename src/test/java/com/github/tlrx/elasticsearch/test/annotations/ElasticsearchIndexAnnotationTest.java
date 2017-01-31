@@ -4,6 +4,7 @@ import com.github.tlrx.elasticsearch.test.support.junit.runners.ElasticsearchRun
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.admin.cluster.state.ClusterStateResponse;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
+import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.client.AdminClient;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
@@ -61,7 +62,7 @@ public class ElasticsearchIndexAnnotationTest {
         // Index a simple doc
         client.prepareIndex("people", "person", "1")
                 .setSource(JsonXContent.contentBuilder().startObject().field("Name", "John Doe").endObject())
-                .setRefresh(true)
+                .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE)
                 .execute()
                 .actionGet();
 
@@ -99,7 +100,7 @@ public class ElasticsearchIndexAnnotationTest {
         // Index a simple doc
         client.prepareIndex("people", "person", "1")
                 .setSource(JsonXContent.contentBuilder().startObject().field("Name", "John Doe").endObject())
-                .setRefresh(true)
+                .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE)
                 .execute()
                 .actionGet();
     }

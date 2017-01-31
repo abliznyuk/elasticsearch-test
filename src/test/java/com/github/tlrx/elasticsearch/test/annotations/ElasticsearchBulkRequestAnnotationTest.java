@@ -1,9 +1,10 @@
 package com.github.tlrx.elasticsearch.test.annotations;
 
 import com.github.tlrx.elasticsearch.test.support.junit.runners.ElasticsearchRunner;
-import org.elasticsearch.action.count.CountResponse;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.node.Node;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -28,8 +29,12 @@ public class ElasticsearchBulkRequestAnnotationTest {
     @ElasticsearchBulkRequest(dataFile = "com/github/tlrx/elasticsearch/test/annotations/documents/bulk1.json")
     public void testElasticsearchBulkRequest1() {
         // Count number of documents
-        CountResponse countResponse = client.prepareCount("documents").setTypes("doc1").execute().actionGet();
-        assertEquals(6, countResponse.getCount());
+        SearchResponse countResponse = client.prepareSearch("documents")
+                .setSource(new SearchSourceBuilder().size(0))
+                .setTypes("doc1")
+                .execute()
+                .actionGet();
+        assertEquals(6, countResponse.getHits().getTotalHits());
     }
 
     @Test
@@ -37,7 +42,11 @@ public class ElasticsearchBulkRequestAnnotationTest {
     @ElasticsearchBulkRequest(dataFile = "com/github/tlrx/elasticsearch/test/annotations/documents/bulk2.json")
     public void testElasticsearchBulkRequest2() {
         // Count number of documents
-        CountResponse countResponse = client.prepareCount("documents").setTypes("doc1").execute().actionGet();
-        assertEquals(9, countResponse.getCount());
+        SearchResponse countResponse = client.prepareSearch("documents")
+                .setSource(new SearchSourceBuilder().size(0))
+                .setTypes("doc1")
+                .execute()
+                .actionGet();
+        assertEquals(9, countResponse.getHits().getTotalHits());
     }
 }

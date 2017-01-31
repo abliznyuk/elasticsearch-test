@@ -10,6 +10,7 @@ import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRespon
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.client.AdminClient;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
@@ -65,7 +66,7 @@ public class AliasesTest {
         // Index book #1 in the index "library1"
         IndexResponse indexResponse = client
                 .prepareIndex("library1", "book", "1")
-                .setRefresh(true)
+                .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE)
                 .setSource(
                         JsonXContent.contentBuilder().startObject()
                                 .field("title", "Les Miserables")
@@ -84,7 +85,7 @@ public class AliasesTest {
         // Index another book #1 in the index "library2"
         indexResponse = client
                 .prepareIndex("library2", "book", "1")
-                .setRefresh(true)
+                .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE)
                 .setSource(
                         JsonXContent.contentBuilder().startObject()
                                 .field("title", "Notre-Dame de Paris")

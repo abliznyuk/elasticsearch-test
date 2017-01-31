@@ -4,17 +4,24 @@ import com.github.tlrx.elasticsearch.test.annotations.ElasticsearchAdminClient;
 import com.github.tlrx.elasticsearch.test.annotations.ElasticsearchClient;
 import com.github.tlrx.elasticsearch.test.annotations.ElasticsearchNode;
 import com.github.tlrx.elasticsearch.test.support.junit.runners.ElasticsearchRunner;
+import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.admin.indices.forcemerge.ForceMergeResponse;
+import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsResponse;
 import org.elasticsearch.action.admin.indices.stats.IndicesStatsResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.client.AdminClient;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.shard.DocsStats;
 import org.elasticsearch.node.Node;
+import org.elasticsearch.rest.RestStatus;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,6 +58,14 @@ public class OptimizeTest {
     @Before
     public void setUp() throws IOException {
 
+        // Create index with concrete index settings
+        client.admin().indices().prepareCreate(INDEX)
+                .setSettings(Settings.builder()
+                        .put("index.number_of_shards", 1)
+                        .put("index.number_of_replicas", 0)
+                )
+                .get();
+
         // Creates NB documents
         BulkRequestBuilder bulkRequestBuilder = client.prepareBulk();
 
@@ -66,18 +81,20 @@ public class OptimizeTest {
             bulkRequestBuilder.add(indexRequest);
         }
 
-        BulkResponse bulkResponse = bulkRequestBuilder.setRefresh(true).execute().actionGet();
+        BulkResponse bulkResponse = bulkRequestBuilder.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE)
+                .execute()
+                .actionGet();
         LOGGER.info(String.format("Bulk request executed in %d ms, %d document(s) indexed, failures : %s.\r\n", bulkResponse.getTookInMillis(), NB, bulkResponse.hasFailures()));
 
         // Deletes some documents
         for (int i = 0; i < NB; i = i + 9) {
             DeleteResponse deleteResponse = client
                     .prepareDelete(INDEX, TYPE, String.valueOf(i))
-                    .setRefresh(true)
+                    .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE)
                     .execute()
                     .actionGet();
 
-            if (!deleteResponse.isFound()) {
+            if (deleteResponse.status().equals(RestStatus.NOT_FOUND)) {
                 LOGGER.info(String.format("Unable to delete document [id:%d], not found.\r\n", i));
             } else {
                 deleted++;
@@ -91,8 +108,12 @@ public class OptimizeTest {
     public void testOptimize() {
 
         // Count documents number
-        CountResponse countResponse = client.prepareCount(INDEX).setTypes(TYPE).execute().actionGet();
-        assertEquals((NB - deleted), countResponse.getCount());
+        SearchResponse countResponse = client.prepareSearch(INDEX)
+                .setSource(new SearchSourceBuilder().size(0))
+                .setTypes(TYPE)
+                .execute()
+                .actionGet();
+        assertEquals((NB - deleted), countResponse.getHits().getTotalHits());
 
         // Retrieves document status for the index
         IndicesStatsResponse status = admin.indices().prepareStats(INDEX).execute().actionGet();

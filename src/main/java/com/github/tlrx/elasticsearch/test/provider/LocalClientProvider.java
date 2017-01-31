@@ -19,12 +19,15 @@
 package com.github.tlrx.elasticsearch.test.provider;
 
 
-import com.github.tlrx.elasticsearch.test.EsSetupRuntimeException;
+import com.github.tlrx.elasticsearch.test.support.junit.handlers.annotations.ElasticsearchNodeAnnotationHandler;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.node.Node;
-import org.elasticsearch.node.NodeBuilder;
+import org.elasticsearch.node.NodeValidationException;
+import org.elasticsearch.node.internal.InternalSettingsPreparer;
+import org.elasticsearch.plugins.Plugin;
+import org.elasticsearch.transport.Netty4Plugin;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +38,9 @@ import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Collection;
+
+import static java.util.Collections.singletonList;
 
 /**
  * LocalClientProvider instantiates a local node with in-memory index store type.
@@ -56,7 +62,12 @@ public class LocalClientProvider implements ClientProvider {
     public void open() {
         if (node == null || node.isClosed()) {
             // Build and start the node
-            node = NodeBuilder.nodeBuilder().settings(buildNodeSettings()).node();
+            node = new MyNode(buildNodeSettings(), singletonList(Netty4Plugin.class));
+            try {
+                node.start();
+            } catch (NodeValidationException e) {
+                throw new RuntimeException();
+            }
 
             // Get a client
             client = node.client();
@@ -83,7 +94,11 @@ public class LocalClientProvider implements ClientProvider {
         }
 
         if ((node != null) && (!node.isClosed())) {
-            node.close();
+            try {
+                node.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
             deleteRecursively(new File("./target/elasticsearch-test/"));
         }
@@ -128,15 +143,19 @@ public class LocalClientProvider implements ClientProvider {
         Settings.Builder builder = Settings.builder()
                 .put("node.name", "node-test-" + System.currentTimeMillis())
                 .put("node.data", true)
+                .put("node.attr.local", true)
+                .put("node.max_local_storage_nodes", 10)
                 .put("cluster.name", "cluster-test-" + getLocalHostName())
                 .put("path.home", "./target/elasticsearch-test")
                 .put("path.data", "./target/elasticsearch-test/data")
-                .put("path.work", "./target/elasticsearch-test/work")
                 .put("path.logs", "./target/elasticsearch-test/logs")
-                .put("index.number_of_shards", "1")
-                .put("index.number_of_replicas", "0")
-                .put("cluster.routing.schedule", "50ms")
-                .put("node.local", true);
+                //.put("path.work", "./target/elasticsearch-test/work")
+                //.put("index.number_of_shards", "1")
+                //.put("index.number_of_replicas", "0")
+                //.put("cluster.routing.schedule", "50ms")
+                .put("transport.type", "netty4")
+                .put("http.type", "netty4")
+                .put("http.enabled", "true");
 
         if (settings != null) {
             builder.put(settings);
@@ -153,6 +172,12 @@ public class LocalClientProvider implements ClientProvider {
             return InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
             return "unknown";
+        }
+    }
+
+    private static class MyNode extends Node {
+        public MyNode(Settings preparedSettings, Collection<Class<? extends Plugin>> classpathPlugins) {
+            super(InternalSettingsPreparer.prepareEnvironment(preparedSettings, null), classpathPlugins);
         }
     }
 }

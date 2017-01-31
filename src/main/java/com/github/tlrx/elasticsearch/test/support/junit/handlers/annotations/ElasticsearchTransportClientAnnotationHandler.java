@@ -9,6 +9,7 @@ import com.github.tlrx.elasticsearch.test.support.junit.handlers.FieldLevelElast
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -37,7 +38,7 @@ public class ElasticsearchTransportClientAnnotationHandler implements ClassLevel
                 .put("cluster.name", String.valueOf(elasticsearchTransportClient.clusterName()))
                 .build();
 
-        TransportClient client = TransportClient.builder().settings(settings).build();
+        TransportClient client = new PreBuiltTransportClient(settings);
 
         int n = 0;
         for (String host : elasticsearchTransportClient.hostnames()) {

@@ -6,6 +6,7 @@ package com.github.tlrx.elasticsearch.test.support.junit.handlers.annotations;
 import com.github.tlrx.elasticsearch.test.annotations.ElasticsearchBulkRequest;
 import com.github.tlrx.elasticsearch.test.support.junit.handlers.MethodLevelElasticsearchAnnotationHandler;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.client.Client;
 
 import java.io.ByteArrayOutputStream;
@@ -60,7 +61,7 @@ public class ElasticsearchBulkRequestAnnotationHandler extends AbstractAnnotatio
             // Execute the BulkRequest
             BulkResponse response = client.prepareBulk()
                     .add(buffer, 0, buffer.length, elasticsearchBulkRequest.defaultIndexName(), elasticsearchBulkRequest.defaultTypeName())
-                    .setRefresh(true)
+                    .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE)
                     .execute()
                     .actionGet();
 

@@ -27,7 +27,7 @@ public @interface ElasticsearchMappingSubField {
     /**
      * Default field type
      */
-    Types type() default Types.String;
+    Types type() default Types.Text;
 
     /**
      * Store property (true means "yes", false means "no" and default is set to false)

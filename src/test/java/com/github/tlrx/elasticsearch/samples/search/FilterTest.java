@@ -33,12 +33,12 @@ public class FilterTest {
     @ElasticsearchIndex(indexName = INDEX,
             mappings = {@ElasticsearchMapping(typeName = "book",
                     properties = {
-                            @ElasticsearchMappingField(name = "title", store = Store.Yes, type = Types.String),
-                            @ElasticsearchMappingField(name = "tags", store = Store.Yes, type = Types.String),
+                            @ElasticsearchMappingField(name = "title", store = Store.Yes, type = Types.Text),
+                            @ElasticsearchMappingField(name = "tags", store = Store.Yes, type = Types.Keyword),
                             @ElasticsearchMappingField(name = "year", store = Store.Yes, type = Types.Integer),
                             @ElasticsearchMappingField(name = " author", fields = {
-                                    @ElasticsearchMappingSubField(name = "firstname", store = Store.Yes, type = Types.String),
-                                    @ElasticsearchMappingSubField(name = "lastname", store = Store.Yes, type = Types.String)
+                                    @ElasticsearchMappingSubField(name = "firstname", store = Store.Yes, type = Types.Keyword),
+                                    @ElasticsearchMappingSubField(name = "lastname", store = Store.Yes, type = Types.Keyword)
                             })
                     })
             })

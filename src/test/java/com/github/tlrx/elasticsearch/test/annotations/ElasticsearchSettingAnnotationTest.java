@@ -21,7 +21,7 @@ public class ElasticsearchSettingAnnotationTest {
 
     @ElasticsearchNode(name = "node0", settings = {
             @ElasticsearchSetting(name = "http.enabled", value = "false"),
-            @ElasticsearchSetting(name = "node.zone", value = "zone_one")})
+            @ElasticsearchSetting(name = "node.attr.zone", value = "zone_one")})
     Node node;
 
     @ElasticsearchAdminClient(nodeName = "node0")
@@ -44,9 +44,9 @@ public class ElasticsearchSettingAnnotationTest {
                 .execute()
                 .actionGet();
 
-        Settings nodeSettings = infoResponse.getAt(0).getSettings();
+        Settings nodeSettings = infoResponse.getNodes().get(0).getSettings();
         assertEquals("false", nodeSettings.get("http.enabled"));
-        assertEquals("zone_one", nodeSettings.get("node.zone"));
+        assertEquals("zone_one", nodeSettings.get("node.attr.zone"));
 
         // Check custom settings on index
         ClusterStateResponse response = adminClient.cluster().prepareState()
@@ -57,8 +57,9 @@ public class ElasticsearchSettingAnnotationTest {
         assertEquals("1", indexSettings.get("index.number_of_replicas"));
 
         // Check default settings
+        // Index settings removed from node settings and set explicitly. Default values - 5 shards, 1 replica for now.
         indexSettings = response.getState().metaData().index("people").getSettings();
-        assertEquals("1", indexSettings.get("index.number_of_shards"));
-        assertEquals("0", indexSettings.get("index.number_of_replicas"));
+        assertEquals("5", indexSettings.get("index.number_of_shards"));
+        assertEquals("1", indexSettings.get("index.number_of_replicas"));
     }
 }

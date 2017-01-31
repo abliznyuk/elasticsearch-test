@@ -19,8 +19,9 @@
 package com.github.tlrx.elasticsearch.test.request;
 
 import org.elasticsearch.ElasticsearchException;
-import org.elasticsearch.action.count.CountResponse;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import java.util.Arrays;
 
@@ -40,8 +41,11 @@ public class Count implements Request<Long> {
 
     @Override
     public Long execute(Client client) throws ElasticsearchException {
-        CountResponse response = client.prepareCount(indices).execute().actionGet();
-        return response.getCount();
+        SearchResponse response = client.prepareSearch(indices)
+                .setSource(new SearchSourceBuilder().size(0))
+                .execute()
+                .actionGet();
+        return response.getHits().getTotalHits();
     }
 
     @Override

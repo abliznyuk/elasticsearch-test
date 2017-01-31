@@ -23,6 +23,7 @@ import com.github.tlrx.elasticsearch.test.provider.JSONProvider;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.client.Client;
 
 /**
@@ -33,7 +34,7 @@ public class Index implements Request<Void> {
     private final IndexRequest request;
 
     public Index(String index, String type) {
-        request = new IndexRequest(index, type).refresh(true);
+        request = new IndexRequest(index, type).setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
     }
 
     public Index(String index, String type, String id) {

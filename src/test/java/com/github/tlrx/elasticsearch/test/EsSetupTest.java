@@ -3,12 +3,14 @@ package com.github.tlrx.elasticsearch.test;
 
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.loader.SettingsLoaderFactory;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import static com.github.tlrx.elasticsearch.test.EsSetup.*;
+import static com.github.tlrx.elasticsearch.test.EsSetup.fromClassPath;
 import static org.junit.Assert.*;
 
 /**
@@ -58,7 +60,7 @@ public class EsSetupTest {
                         .withSource(fromClassPath("com/github/tlrx/elasticsearch/test/indices/catalog-2011.json")),
 
                 createIndex("catalog-2012")
-                        .withSettings("com/github/tlrx/elasticsearch/test/settings/catalog.json"),
+                        .withSettings(fromClassPath("com/github/tlrx/elasticsearch/test/settings/catalog.json")),
 
                 createIndex("catalog-2013")
                         .withSettings(fromClassPath("com/github/tlrx/elasticsearch/test/settings/catalog.json"))

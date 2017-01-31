@@ -1,2 +1,2 @@
 # Simple node property to check file loading
-node.zone: zone1
+node.attr.zone: zone1

@@ -340,24 +340,6 @@ public class ElasticsearchIndexAnnotationHandler extends AbstractAnnotationHandl
                         .endObject();
             }
 
-            if (mapping.ttl()) {
-                builder = builder.startObject("_ttl").field("enabled",
-                        String.valueOf(mapping.ttl()));
-                if (mapping.ttlValue().length() > 0) {
-                    builder = builder.field("default", mapping.ttlValue());
-                }
-                builder = builder.endObject();
-            }
-
-            if (mapping.timestamp()) {
-                builder = builder.startObject("_timestamp").field("enabled",
-                        String.valueOf(mapping.timestamp()));
-                if (mapping.timestampFormat().length() > 0) {
-                    builder = builder.field("format", mapping.timestampFormat());
-                }
-                builder = builder.endObject();
-            }
-
             builder = builder.startObject("properties");
 
             // Manage fields

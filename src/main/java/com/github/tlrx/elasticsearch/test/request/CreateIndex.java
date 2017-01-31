@@ -25,9 +25,13 @@ import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -109,7 +113,9 @@ public class CreateIndex implements Request<Void> {
 
             CreateIndexResponse response = client.admin().indices().create(request).get();
             if ((response.isAcknowledged()) && (bulkRequestBuilder != null)) {
-                BulkResponse bulkResponse = bulkRequestBuilder.setRefresh(true).execute().actionGet();
+                BulkResponse bulkResponse = bulkRequestBuilder.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE)
+                        .execute()
+                        .actionGet();
                 if (bulkResponse.hasFailures()) {
                     throw new EsSetupRuntimeException("Bulk request has failures: "+bulkResponse.buildFailureMessage());
                 }

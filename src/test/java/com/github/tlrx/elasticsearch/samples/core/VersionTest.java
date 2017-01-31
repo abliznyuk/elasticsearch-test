@@ -38,7 +38,7 @@ public class VersionTest {
      * Extract current version number from error message
      */
     private static long getCurrentVersion(VersionConflictEngineException e) {
-        Pattern regex = Pattern.compile("current \\[(-?\\d+)\\]");
+        Pattern regex = Pattern.compile("current version \\[(-?\\d+)\\]");
         Matcher matcher = regex.matcher(e.getMessage());
         if (matcher.find()) {
             String version = matcher.group(1);

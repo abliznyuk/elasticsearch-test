@@ -25,6 +25,7 @@ import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.client.Client;
 
 /**
@@ -35,7 +36,7 @@ public class Delete implements Request<Void> {
     private final DeleteRequest request;
 
     public Delete(String index, String type, String id) {
-        request = new DeleteRequest(index, type, id).refresh(true);
+        request = new DeleteRequest(index, type, id).setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
     }
 
     @Override
