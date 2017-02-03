@@ -23,6 +23,9 @@ import com.github.tlrx.elasticsearch.test.request.*;
 import com.google.common.base.Preconditions;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.plugins.Plugin;
+
+import java.util.Collection;
 
 /**
  * This class aims to simplify the ElasticSearch setup for unit testing. It allows to start and stop an embedded local
@@ -86,6 +89,10 @@ public class EsSetup {
      */
     public EsSetup(Settings settings) {
         this(new LocalClientProvider(settings));
+    }
+
+    public EsSetup(Settings settings, Collection<Class<? extends Plugin>> plugins) {
+        this(new LocalClientProvider(settings, plugins));
     }
 
     /**

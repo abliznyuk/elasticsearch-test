@@ -19,7 +19,6 @@
 package com.github.tlrx.elasticsearch.test.provider;
 
 
-import com.github.tlrx.elasticsearch.test.support.junit.handlers.annotations.ElasticsearchNodeAnnotationHandler;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.TimeValue;
@@ -38,9 +37,12 @@ import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
-import static java.util.Collections.singletonList;
+import static java.util.Collections.emptyList;
 
 /**
  * LocalClientProvider instantiates a local node with in-memory index store type.
@@ -50,19 +52,26 @@ public class LocalClientProvider implements ClientProvider {
     private Node node = null;
     private Client client = null;
     private Settings settings = null;
+    private Collection<Class<? extends Plugin>> plugins = null;
 
     public LocalClientProvider() {
     }
 
     public LocalClientProvider(Settings settings) {
+        this(settings, emptyList());
+    }
+
+    public LocalClientProvider(Settings settings, Collection<Class<? extends Plugin>> plugins) {
         this.settings = settings;
+        this.plugins = new ArrayList<>(plugins.size());
+        this.plugins.addAll(plugins);
     }
 
     @Override
     public void open() {
         if (node == null || node.isClosed()) {
             // Build and start the node
-            node = new MyNode(buildNodeSettings(), singletonList(Netty4Plugin.class));
+            node = new MyNode(buildNodeSettings(), buildNodePluginsList());
             try {
                 node.start();
             } catch (NodeValidationException e) {
@@ -162,6 +171,17 @@ public class LocalClientProvider implements ClientProvider {
         }
 
         return builder.build();
+    }
+
+    protected Collection<Class<? extends Plugin>> buildNodePluginsList() {
+        final Set<Class<? extends Plugin>> nodePlugins = new HashSet<>();
+
+        if (this.plugins != null) {
+            nodePlugins.addAll(this.plugins);
+        }
+        nodePlugins.add(Netty4Plugin.class);
+
+        return nodePlugins;
     }
 
     /**
