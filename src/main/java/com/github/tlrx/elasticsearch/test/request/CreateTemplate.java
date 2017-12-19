@@ -26,8 +26,11 @@ import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateReque
 import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.XContentType;
 
 import java.util.Map;
+
+import static java.util.Collections.singletonList;
 
 /**
  * A {@link Request} used to create indices templates.
@@ -43,7 +46,7 @@ public class CreateTemplate implements Request<Void> {
     }
 
     public CreateTemplate withTemplate(String template) {
-        request.template(template);
+        request.patterns(singletonList(template));
         return this;
     }
 
@@ -52,16 +55,16 @@ public class CreateTemplate implements Request<Void> {
         return this;
     }
 
-    public CreateTemplate withSettings(String source) {
+    public CreateTemplate withSettings(String source, XContentType type) {
         Settings settings = Settings.builder()
-                .loadFromSource(source)
+                .loadFromSource(source, type)
                 .build();
         withSettings(settings);
         return this;
     }
 
     public CreateTemplate withSettings(JSONProvider jsonProvider) {
-        withSettings(jsonProvider.toJson());
+        withSettings(jsonProvider.toJson(), XContentType.JSON);
         return this;
     }
 
@@ -71,7 +74,7 @@ public class CreateTemplate implements Request<Void> {
     }
 
     public CreateTemplate withMapping(String type, String source) {
-        request.mapping(type, source);
+        request.mapping(type, source, XContentType.JSON);
         return this;
     }
 
@@ -80,13 +83,13 @@ public class CreateTemplate implements Request<Void> {
         return this;
     }
 
-    public CreateTemplate withSource(String source) {
-        request.source(source);
+    public CreateTemplate withSource(String jsonSource) {
+        request.source(jsonSource, XContentType.JSON);
         return this;
     }
 
     public CreateTemplate withSource(JSONProvider jsonProvider) {
-        request.source(jsonProvider.toJson());
+        request.source(jsonProvider.toJson(), XContentType.JSON);
         return this;
     }
 

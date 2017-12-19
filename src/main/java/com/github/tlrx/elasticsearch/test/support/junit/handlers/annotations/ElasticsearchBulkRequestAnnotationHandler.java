@@ -8,6 +8,7 @@ import com.github.tlrx.elasticsearch.test.support.junit.handlers.MethodLevelElas
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.xcontent.XContentType;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -52,22 +53,25 @@ public class ElasticsearchBulkRequestAnnotationHandler extends AbstractAnnotatio
             output = new ByteArrayOutputStream();
 
             byte[] buffer = new byte[512 * 1024];
-            while (input.read(buffer) > 0) {
-                output.write(buffer);
+            while (true) {
+                int bytesRead = input.read(buffer);
+                if (bytesRead == -1)
+                    break;
+                output.write(buffer, 0, bytesRead);
             }
 
             buffer = output.toByteArray();
 
             // Execute the BulkRequest
             BulkResponse response = client.prepareBulk()
-                    .add(buffer, 0, buffer.length, elasticsearchBulkRequest.defaultIndexName(), elasticsearchBulkRequest.defaultTypeName())
+                    .add(buffer, 0, buffer.length, elasticsearchBulkRequest.defaultIndexName(), elasticsearchBulkRequest.defaultTypeName(), XContentType.JSON)
                     .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE)
                     .execute()
                     .actionGet();
 
             LOGGER.info(String.format("Bulk request for data file '%s' executed in %d ms with %sfailures",
                     elasticsearchBulkRequest.dataFile(),
-                    response.getTookInMillis(),
+                    response.getTook().getMillis(),
                     response.hasFailures() ? "" : "no "));
         } finally {
             try {

@@ -74,7 +74,7 @@ public class ElasticsearchIndexAnnotationHandler extends AbstractAnnotationHandl
             DeleteIndexResponse deleteIndex = indicesAdmin.prepareDelete(indexName).get();
             // Re-create index
             indicesAdmin.prepareCreate(indexName)
-                    .setSource(streamOutput.bytes())
+                    .setSource(streamOutput.bytes(), XContentType.JSON)
                     .get();
 
             // Wait for index to be yellow
@@ -195,7 +195,7 @@ public class ElasticsearchIndexAnnotationHandler extends AbstractAnnotationHandl
         // Loads settings from settings file
         try(InputStream settingsStreams = Thread.currentThread().getContextClassLoader().getResourceAsStream(settingsFile)) {
             if (settingsStreams != null) {
-                Settings configSettings = Settings.builder().loadFromStream(settingsFile, settingsStreams).build();
+                Settings configSettings = Settings.builder().loadFromStream(settingsFile, settingsStreams, true).build();
                 settingsBuilder.put(configSettings);
             }
         } catch (IOException e) {
@@ -216,7 +216,7 @@ public class ElasticsearchIndexAnnotationHandler extends AbstractAnnotationHandl
                 String prefix = "index.analysis.analyzer." + analyzer.name();
                 settingsBuilder.put(prefix + ".tokenizer", analyzer.tokenizer());
                 if (analyzer.filtersNames() != null && analyzer.filtersNames().length > 0) {
-                    settingsBuilder.putArray(prefix + ".filter", analyzer.filtersNames());
+                    settingsBuilder.putList(prefix + ".filter", analyzer.filtersNames());
                 }
             }
         }
@@ -242,7 +242,7 @@ public class ElasticsearchIndexAnnotationHandler extends AbstractAnnotationHandl
     private XContentBuilder buildField(ElasticsearchMappingField field, XContentBuilder builder) throws IOException {
         builder = builder.startObject(field.name())
                 .field("type", field.type().toString().toLowerCase())
-                .field("store", field.store().toString().toLowerCase());
+                .field("store", field.store().toString().toLowerCase().equals("yes"));
 
         if (!field.index().equals(Index.Undefined)) {
             builder.field("index", field.index().toString().toLowerCase());
@@ -287,7 +287,7 @@ public class ElasticsearchIndexAnnotationHandler extends AbstractAnnotationHandl
     private XContentBuilder buildSubField(ElasticsearchMappingSubField subField, XContentBuilder builder) throws IOException {
         builder = builder.startObject(subField.name())
                 .field("type", subField.type().toString().toLowerCase())
-                .field("store", subField.store().toString().toLowerCase());
+                .field("store", subField.store().toString().toLowerCase().equals("yes"));
 
         if (!subField.index().equals(Index.Undefined)) {
             builder.field("index", subField.index().toString().toLowerCase());

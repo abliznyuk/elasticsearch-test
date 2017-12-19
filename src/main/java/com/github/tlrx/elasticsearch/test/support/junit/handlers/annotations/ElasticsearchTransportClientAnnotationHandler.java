@@ -8,7 +8,7 @@ import com.github.tlrx.elasticsearch.test.support.junit.handlers.ClassLevelElast
 import com.github.tlrx.elasticsearch.test.support.junit.handlers.FieldLevelElasticsearchAnnotationHandler;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
 import java.lang.annotation.Annotation;
@@ -42,7 +42,7 @@ public class ElasticsearchTransportClientAnnotationHandler implements ClassLevel
 
         int n = 0;
         for (String host : elasticsearchTransportClient.hostnames()) {
-            client.addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress(host, elasticsearchTransportClient.ports()[n++])));
+            client.addTransportAddress(new TransportAddress(new InetSocketAddress(host, elasticsearchTransportClient.ports()[n++])));
         }
 
         if (client != null) {

@@ -84,7 +84,7 @@ public class OptimizeTest {
         BulkResponse bulkResponse = bulkRequestBuilder.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE)
                 .execute()
                 .actionGet();
-        LOGGER.info(String.format("Bulk request executed in %d ms, %d document(s) indexed, failures : %s.\r\n", bulkResponse.getTookInMillis(), NB, bulkResponse.hasFailures()));
+        LOGGER.info(String.format("Bulk request executed in %d ms, %d document(s) indexed, failures : %s.\r\n", bulkResponse.getTook().getMillis(), NB, bulkResponse.hasFailures()));
 
         // Deletes some documents
         for (int i = 0; i < NB; i = i + 9) {

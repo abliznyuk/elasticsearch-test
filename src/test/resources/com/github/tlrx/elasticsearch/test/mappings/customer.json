@@ -1,8 +1,8 @@
 {
     "customer" : {
         "properties" : {
-            "firstname" : {"type" : "string", "store" : "yes"}     ,
-            "lastname" : {"type" : "string", "store" : "yes"}
+            "firstname" : {"type" : "text", "store" : true}     ,
+            "lastname" : {"type" : "text", "store" : true}
         }
     }
 }

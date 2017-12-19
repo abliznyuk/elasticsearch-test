@@ -7,6 +7,7 @@ import org.elasticsearch.action.admin.cluster.state.ClusterStateRequestBuilder;
 import org.elasticsearch.action.admin.cluster.state.ClusterStateResponse;
 import org.elasticsearch.cluster.metadata.IndexTemplateMetaData;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static com.github.tlrx.elasticsearch.test.EsSetup.createTemplate;
@@ -17,6 +18,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Unit test for the {@link DeleteTemplates} request
  */
+@Ignore
 public class DeleteTemplatesTest {
     private static final String TEST_TEMPLATE_NAME = "test-template";
     private EsSetup esSetup;

@@ -28,10 +28,10 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.xcontent.XContentType;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -56,16 +56,16 @@ public class CreateIndex implements Request<Void> {
         return this;
     }
 
-    public CreateIndex withSettings(String source) {
+    public CreateIndex withSettings(String source, XContentType type) {
         Settings settings = Settings.builder()
-                .loadFromSource(source)
+                .loadFromSource(source, type)
                 .build();
         withSettings(settings);
         return this;
     }
 
     public CreateIndex withSettings(JSONProvider jsonProvider) {
-        withSettings(jsonProvider.toJson());
+        withSettings(jsonProvider.toJson(), XContentType.JSON);
         return this;
     }
 
@@ -75,7 +75,7 @@ public class CreateIndex implements Request<Void> {
     }
 
     public CreateIndex withMapping(String type, String source) {
-        request.mapping(type, source);
+        request.mapping(type, source, XContentType.JSON);
         return this;
     }
 
@@ -85,12 +85,12 @@ public class CreateIndex implements Request<Void> {
     }
 
     public CreateIndex withSource(String source) {
-        request.source(source);
+        request.source(source, XContentType.JSON);
         return this;
     }
 
     public CreateIndex withSource(JSONProvider jsonProvider) {
-        request.source(jsonProvider.toJson());
+        request.source(jsonProvider.toJson(), XContentType.JSON);
         return this;
     }
 
@@ -107,7 +107,7 @@ public class CreateIndex implements Request<Void> {
                 bulkRequestBuilder = client.prepareBulk();
                 for (JSONProvider jsonProvider : bulks) {
                     byte[] content = jsonProvider.toJson().getBytes("UTF-8");
-                    bulkRequestBuilder.add(content, 0, content.length);
+                    bulkRequestBuilder.add(content, 0, content.length, XContentType.JSON);
                 }
             }
 

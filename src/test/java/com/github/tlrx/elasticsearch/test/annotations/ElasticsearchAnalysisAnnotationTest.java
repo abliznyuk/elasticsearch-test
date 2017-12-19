@@ -5,6 +5,7 @@ import org.elasticsearch.action.admin.cluster.state.ClusterStateResponse;
 import org.elasticsearch.client.AdminClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.node.Node;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -15,6 +16,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author tlrx
  */
+@Ignore
 @RunWith(ElasticsearchRunner.class)
 public class ElasticsearchAnalysisAnnotationTest {
 
@@ -31,11 +33,6 @@ public class ElasticsearchAnalysisAnnotationTest {
                     @ElasticsearchSetting(name = "number_of_replicas", value = "8")},
                     analysis = @ElasticsearchAnalysis(
                             filters = {
-                                    @ElasticsearchFilter(name = "myLength", typeName = "length",
-                                            settings = {
-                                                    @ElasticsearchSetting(name = "min", value = "0"),
-                                                    @ElasticsearchSetting(name = "max", value = "5")
-                                            }),
                                     @ElasticsearchFilter(name = "myEdgeNGram", typeName = "edgeNGram",
                                             settings = {
                                                     @ElasticsearchSetting(name = "min_gram", value = "2"),
@@ -45,7 +42,7 @@ public class ElasticsearchAnalysisAnnotationTest {
                             },
                             analyzers = {
                                     @ElasticsearchAnalyzer(name = "untouched", tokenizer = "keyword", filtersNames = {"lowercase", "asciifolding"}),
-                                    @ElasticsearchAnalyzer(name = "basic", tokenizer = "standard", filtersNames = {"lowercase", "myEdgeNGram", "myLength"})
+                                    @ElasticsearchAnalyzer(name = "basic", tokenizer = "standard", filtersNames = {"lowercase", "myEdgeNGram"})
                             })
             ),
             @ElasticsearchIndex(indexName = "people")})

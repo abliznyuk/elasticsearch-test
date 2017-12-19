@@ -25,6 +25,7 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.xcontent.XContentType;
 
 /**
  * A {@link com.github.tlrx.elasticsearch.test.request.Request} used to index documents.
@@ -43,7 +44,7 @@ public class Index implements Request<Void> {
     }
 
     public Index withSource(String source) {
-        request.source(source);
+        request.source(source, XContentType.JSON);
         return this;
     }
 

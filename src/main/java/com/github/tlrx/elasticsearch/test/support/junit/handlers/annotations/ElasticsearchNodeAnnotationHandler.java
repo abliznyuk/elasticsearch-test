@@ -10,9 +10,9 @@ import com.github.tlrx.elasticsearch.test.support.junit.handlers.ClassLevelElast
 import com.github.tlrx.elasticsearch.test.support.junit.handlers.FieldLevelElasticsearchAnnotationHandler;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.settings.Settings.Builder;
+import org.elasticsearch.node.InternalSettingsPreparer;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeValidationException;
-import org.elasticsearch.node.internal.InternalSettingsPreparer;
 import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.transport.Netty4Plugin;
 
@@ -137,7 +137,7 @@ public class ElasticsearchNodeAnnotationHandler implements ClassLevelElasticsear
         String settingsFile = elasticsearchNode.configFile();
         Settings configSettings;
         try(InputStream settingsStreams = Thread.currentThread().getContextClassLoader().getResourceAsStream(settingsFile)) {
-            configSettings = Settings.builder().loadFromStream(settingsFile, settingsStreams).build();
+            configSettings = Settings.builder().loadFromStream(settingsFile, settingsStreams, true).build();
             settingsBuilder.put(configSettings);
         } catch (IOException e) {
             throw new EsSetupRuntimeException("Failed to load settings "+settingsFile, e);
