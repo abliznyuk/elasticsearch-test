@@ -15,6 +15,7 @@ import org.elasticsearch.client.AdminClient;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.node.Node;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -27,6 +28,7 @@ import static org.junit.Assert.*;
  *
  * @author tlrx
  */
+@Ignore
 @RunWith(ElasticsearchRunner.class)
 public class AliasesTest {
 
